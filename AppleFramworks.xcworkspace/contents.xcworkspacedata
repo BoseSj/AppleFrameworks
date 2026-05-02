@@ -2,6 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:LrnCombine.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:CoreDataX.xcodeproj">
    </FileRef>
 </Workspace>
