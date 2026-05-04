@@ -20,6 +20,10 @@ final class CDXStoreProvider: ObservableObject {
     }
     
     private init() {
+		ValueTransformer.setValueTransformer(
+			ImageTransformer(),
+			forName: NSValueTransformerName("ImageTransformer")
+		)
         self.container = NSPersistentContainer(name: "CDX")
         
         self.container
@@ -30,11 +34,6 @@ final class CDXStoreProvider: ObservableObject {
                     print(description)
                 }
             }
-        
-        ValueTransformer.setValueTransformer(
-            ImageTransformer(),
-            forName: NSValueTransformerName("ImageTransformer")
-        )
     }
 }
 
@@ -42,7 +41,7 @@ extension CDXStoreProvider {
     func add(with name: String) {
         let movie = Movie(context: self.context)
         movie.name = name
-        movie.poster = UIImage(systemName: "popcorn")
+//        movie.poster = UIImage(systemName: "popcorn")
         
         try? self.context.save()
     }

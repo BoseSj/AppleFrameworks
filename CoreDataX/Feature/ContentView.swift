@@ -32,7 +32,8 @@ struct ContentView: View {
                 }
             }
         }
-        
+		.environment(\.managedObjectContext,
+					  CDXStoreProvider.main.context)
     }
 }
 

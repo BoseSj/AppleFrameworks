@@ -11,12 +11,15 @@ import SwiftUI
 struct MovieListVw: View {
     
     @State private var isLoading = false
-    @StateObject private var viewModel = MovieModel()
-    
+	
+	@StateObject var storage = CDXStoreProvider.main
+	@FetchRequest(fetchRequest: Movie.requestMoviesByPopularity)
+	private var movies: FetchedResults<Movie>
+	
     var body: some View {
         NavigationStack {
             List {
-                ForEach(viewModel.movies) { movie in
+                ForEach(movies) { movie in
                     Label {
                         Text(movie.name ?? "N//A")
                     } icon: {
@@ -28,7 +31,7 @@ struct MovieListVw: View {
                 }
             }
             .overlay(content: {
-                if viewModel.movies.isEmpty {
+                if movies.isEmpty {
                     ContentUnavailableView("No movies added", systemImage: "movieclapper")
                 }
             })
@@ -44,8 +47,10 @@ struct MovieListVw: View {
                             self.isLoading = true
                             defer { self.isLoading = false }
                             if let name = try? await MovieGenerator.main?.generateMovie() {
-                                viewModel.storage.add(with: name)
-                            }
+								storage.add(with: name)
+							} else {
+								storage.add(with: "Movie \(UUID().uuidString.prefix(4))")
+							}
                         }
                     }
                     .buttonStyle(.borderedProminent)
