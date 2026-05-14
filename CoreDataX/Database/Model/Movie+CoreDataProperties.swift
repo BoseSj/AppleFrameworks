@@ -1,8 +1,8 @@
 //
 //  Movie+CoreDataProperties.swift
-//  CoreDataX
+//  
 //
-//  Created by SJ Basak on 01/05/26.
+//  Created by SJ Basak on 06/05/26.
 //
 //
 
@@ -23,16 +23,23 @@ extension Movie {
     @NSManaged public var name: String?
     @NSManaged public var poster: UIImage?
     @NSManaged public var rating: Int64
+    @NSManaged public var actors: NSSet?
+    @NSManaged public var characters: NSSet?
 
 }
 
-extension Movie : Identifiable {
-	static var requestMoviesByPopularity: NSFetchRequest<Movie> = {
-		var request = Movie.fetchRequest()
-		request.sortDescriptors = [
-			NSSortDescriptor(keyPath: \Movie.rating, ascending: true)
-		]
-		
-		return request
-	}()
+extension Movie {
+	// MARK: Generated accessors for actors
+    @objc(addActorsObject:)
+    @NSManaged public func addToActors(_ value: Actor)
+
+    @objc(removeActorsObject:)
+    @NSManaged public func removeFromActors(_ value: Actor)
+
+    @objc(addActors:)
+    @NSManaged public func addToActors(_ values: NSSet)
+
+    @objc(removeActors:)
+    @NSManaged public func removeFromActors(_ values: NSSet)
+
 }

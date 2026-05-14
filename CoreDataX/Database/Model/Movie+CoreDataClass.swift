@@ -1,8 +1,8 @@
 //
 //  Movie+CoreDataClass.swift
-//  CoreDataX
+//  
 //
-//  Created by SJ Basak on 01/05/26.
+//  Created by SJ Basak on 06/05/26.
 //
 //
 

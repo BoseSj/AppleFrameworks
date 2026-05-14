@@ -10,7 +10,6 @@ import SwiftUI
 import Combine
 
 
-
 final class SearchText: ObservableObject {
 	@Published var searchQuery = ""
 	@Published private(set) var debouncedSearchQuery = ""
@@ -38,29 +37,36 @@ struct MovieListVw: View {
 		animation: .bouncy
 	)
 	private var sections: SectionedFetchResults<Int64, Movie>
-	
-	@State private var isSortAscending = true
-	@StateObject private var search = SearchText()
-	
+    
+    @State private var inAscending = true
+    @StateObject private var search = SearchText()
 	
     var body: some View {
         NavigationView {
 			List {
-				Toggle("Ascending order", isOn: $isSortAscending)
-				ForEach(self.movies) { movie in
-					VStack(alignment: .leading, spacing: 5){
-						Text(movie.name ?? "N\\A")
-							.font(.title3)
-						Text("\(movie.rating)")
-							.font(.caption)
-							.tint(.gray)
-					}
-				}
+                Toggle("Set ascending", isOn: $inAscending)
+//                ForEach(movies) { movie in
+//                    Label {
+//                        VStack(alignment: .leading, spacing: 5) {
+//                            Text(movie.name ?? "N//A")
+//                                .font(.system(size: 16))
+//                            Text("\(movie.rating)")
+//                                .font(.caption)
+//                                .tint(.gray)
+//                        }
+//                    } icon: {
+//                        if let poster = movie.poster {
+//                            Image(uiImage: poster)
+//                                .foregroundStyle(.blue)
+//                        }
+//                    }
+//                }
             }
 			.searchable(text: $search.searchQuery, prompt: Text("Search Movie"))
             .overlay(content: {
                 if movies.isEmpty {
                     ContentUnavailableView("No movies added", systemImage: "movieclapper")
+                        .foregroundStyle(.gray.gradient)
                 }
             })
             .overlay(content: {
@@ -75,16 +81,32 @@ struct MovieListVw: View {
                             self.isLoading = true
                             defer { self.isLoading = false }
                             if let name = try? await MovieGenerator.main?.generateMovie() {
-								storage.add(with: name)
-							} else {
-								storage.add(with: "Movie \(UUID().uuidString.prefix(4))")
-							}
+                                storage.add(with: name)
+                            } else {
+                                storage.add(with: "Movie \(UUID().uuidString.prefix(4))")
+                            }
                         }
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(.blue)
                 }
             }
+            .searchable(text: $search.searchQuery, prompt: "Search Movie")
+        }
+        .onChange(of: inAscending) {
+            self.movies.sortDescriptors = [
+                SortDescriptor(\.rating, order: inAscending ? .forward : .reverse)
+            ]
+        }
+        .onChange(of: search.debouncedSearchQuery) {
+            guard !search.debouncedSearchQuery.isEmpty else {
+                self.movies.nsPredicate = nil
+                return
+            }
+            self.movies.nsPredicate =  NSPredicate(
+                format: "%K CONTAINS[cd] %@",
+                argumentArray: [#keyPath(Movie.name), search.debouncedSearchQuery]
+            )
         }
 		.onChange(of: search.debouncedSearchQuery) {
 			guard !search.debouncedSearchQuery.isEmpty else {
@@ -96,9 +118,9 @@ struct MovieListVw: View {
 				argumentArray: [#keyPath(Movie.name), search.debouncedSearchQuery]
 			)
 		}
-		.onChange(of: isSortAscending) {
+        .onChange(of: inAscending) {
 			self.movies.sortDescriptors = [
-				SortDescriptor(\Movie.rating, order: isSortAscending ? .forward : .reverse)
+				SortDescriptor(\Movie.rating, order: inAscending ? .forward : .reverse)
 			]
 		}
     }
