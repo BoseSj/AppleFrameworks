@@ -7,6 +7,21 @@
 
 
 import SwiftUI
+import Combine
+
+
+
+final class SearchText: ObservableObject {
+	@Published var searchQuery = ""
+	@Published private(set) var debouncedSearchQuery = ""
+	
+	init() {
+		$searchQuery
+			.debounce(for: 0.3, scheduler: DispatchQueue.main)
+			.removeDuplicates()
+			.assign(to: &$debouncedSearchQuery)
+	}
+}
 
 struct MovieListVw: View {
     
@@ -24,32 +39,25 @@ struct MovieListVw: View {
 	)
 	private var sections: SectionedFetchResults<Int64, Movie>
 	
+	@State private var isSortAscending = true
+	@StateObject private var search = SearchText()
+	
 	
     var body: some View {
-        NavigationStack {
+        NavigationView {
 			List {
-				ForEach(self.sections) { section in
-					Section {
-						ForEach(section) { movie in
-							Text(movie.name ?? "N\\A")
-						}
-					} header: {
-						Text(
-							"Movie Rating: \(section.id)"
-						)
+				Toggle("Ascending order", isOn: $isSortAscending)
+				ForEach(self.movies) { movie in
+					VStack(alignment: .leading, spacing: 5){
+						Text(movie.name ?? "N\\A")
+							.font(.title3)
+						Text("\(movie.rating)")
+							.font(.caption)
+							.tint(.gray)
 					}
 				}
-//                ForEach(movies) { movie in
-//                    Label {
-//                        Text(movie.name ?? "N//A")
-//                    } icon: {
-//                        if let poster = movie.poster {
-//                            Image(uiImage: poster)
-//                                .foregroundStyle(.blue)
-//                        }
-//                    }
-//                }
             }
+			.searchable(text: $search.searchQuery, prompt: Text("Search Movie"))
             .overlay(content: {
                 if movies.isEmpty {
                     ContentUnavailableView("No movies added", systemImage: "movieclapper")
@@ -78,5 +86,20 @@ struct MovieListVw: View {
                 }
             }
         }
+		.onChange(of: search.debouncedSearchQuery) {
+			guard !search.debouncedSearchQuery.isEmpty else {
+				self.movies.nsPredicate = nil
+				return
+			}
+			self.movies.nsPredicate = NSPredicate(
+				format: "%K CONTAINS[cd] %@",
+				argumentArray: [#keyPath(Movie.name), search.debouncedSearchQuery]
+			)
+		}
+		.onChange(of: isSortAscending) {
+			self.movies.sortDescriptors = [
+				SortDescriptor(\Movie.rating, order: isSortAscending ? .forward : .reverse)
+			]
+		}
     }
 }

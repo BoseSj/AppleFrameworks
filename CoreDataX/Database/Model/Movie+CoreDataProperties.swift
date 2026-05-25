@@ -30,7 +30,7 @@ extension Movie : Identifiable {
 	static var requestMoviesByPopularity: NSFetchRequest<Movie> = {
 		var request = Movie.fetchRequest()
 		request.sortDescriptors = [
-			NSSortDescriptor(keyPath: \Movie.rating, ascending: false)
+			NSSortDescriptor(keyPath: \Movie.rating, ascending: true)
 		]
 		
 		return request

@@ -14,6 +14,7 @@
 		D1637C822F42C06E0063E00C /* Exceptions for "LrnCombine" folder in "LrnCombine" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				CombineCli,
 				Info.plist,
 			);
 			target = D1637C6F2F42C06D0063E00C /* LrnCombine */;
