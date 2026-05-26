@@ -45,22 +45,22 @@ struct MovieListVw: View {
         NavigationView {
 			List {
                 Toggle("Set ascending", isOn: $inAscending)
-//                ForEach(movies) { movie in
-//                    Label {
-//                        VStack(alignment: .leading, spacing: 5) {
-//                            Text(movie.name ?? "N//A")
-//                                .font(.system(size: 16))
-//                            Text("\(movie.rating)")
-//                                .font(.caption)
-//                                .tint(.gray)
-//                        }
-//                    } icon: {
-//                        if let poster = movie.poster {
-//                            Image(uiImage: poster)
-//                                .foregroundStyle(.blue)
-//                        }
-//                    }
-//                }
+                ForEach(movies) { movie in
+                    Label {
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text(movie.name ?? "N//A")
+                                .font(.system(size: 16))
+                            Text("\(movie.rating)")
+                                .font(.caption)
+                                .tint(.gray)
+                        }
+                    } icon: {
+                        if let poster = movie.poster {
+                            Image(uiImage: poster)
+                                .foregroundStyle(.blue)
+                        }
+                    }
+                }
             }
 			.searchable(text: $search.searchQuery, prompt: Text("Search Movie"))
             .overlay(content: {
