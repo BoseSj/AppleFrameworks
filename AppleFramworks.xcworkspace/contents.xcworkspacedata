@@ -2,6 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:VisualEffects/VisualEffects.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:CoreBluetoothX.xcodeproj">
    </FileRef>
    <FileRef
