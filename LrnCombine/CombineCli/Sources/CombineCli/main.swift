@@ -1,71 +1,110 @@
 // The Swift Programming Language
 // https://docs.swift.org/swift-book
 
-
 import Foundation
 import Combine
 
+/// An extension to provide custom transformation logic for Combine publishers.
+extension Publisher {
+    /// Transforms each element into a new publisher that emits the element multiple times,
+    /// where the count of repetitions is equal to the element's value itself.
+    ///
+    /// - Parameter maxPublishers: The maximum number of concurrent publishers to subscribe to.
+    /// - Returns: A publisher that emits the repeated elements.
+    func repeatElements(maxPublishers: Subscribers.Demand = .unlimited) -> AnyPublisher<Output, Failure> where Output: BinaryInteger {
+        return self.flatMap(maxPublishers: maxPublishers) { item in
+            // Create an array of the item, repeated 'item' times, and turn it into a publisher.
+            Array(repeating: item, count: Int(item))
+                .publisher
+                .setFailureType(to: Failure.self)
+        }
+        .eraseToAnyPublisher()
+    }
+}
+
 var cancellable: Set<AnyCancellable> = []
 
-let url = URL(string: "https://fakestoreapi.com/products/1")!
+// Using the new custom operator
+//[1, 2, 4, 5].publisher
+//    .print("Input")
+//    .repeatElements(maxPublishers: .max(1))
+//    .sink { value in
+//        print("got: \(value)")
+//    }
+//    .store(in: &cancellable)
 
 
-func fetchProducts<T: Decodable>(from url: URL) -> AnyPublisher<T, Error> {
-    URLSession.shared.dataTaskPublisher(for: url)
-        .mapError({ $0 as Error })
-        .tryMap({ response in
-            let decoder = JSONDecoder()
-            
-            guard let urlResponse = response.response as? HTTPURLResponse,
-                  (200...299).contains(urlResponse.statusCode) else {
-                throw try decoder.decode(APIError.self, from: response.data)
-            }
-            
-            return try decoder.decode(T.self, from: response.data)
-        })
-        .eraseToAnyPublisher()
+/// Networking in Combine
+
+
+func fetchProduct<T: Codable>(with id: String = "1") -> AnyPublisher<T, Error> {
+	let url = URL(string: "https://fakestoreapi.com/products/\(id)")!
+	return URLSession.shared.dataTaskPublisher(for: url)
+		.handleEvents(receiveSubscription: { _ in
+			print("receiveSubscription")
+		}, receiveOutput: { _ in
+			print("output")
+		}, receiveCompletion: { _ in
+			print("receiveCompletion")
+		}, receiveCancel: {
+			print("cancel")
+		}, receiveRequest: { _ in
+			print("request")
+		})
+		.tryMap { item in
+			try JSONDecoder().decode(T.self, from: item.data)
+		}
+		.eraseToAnyPublisher()
 }
 
 
-/// API Error
-struct APIError: Codable, Error {}
-
-/// Product
+// MARK: - Product
 struct Product: Codable {
-    let id: Int
-    let title: String
-    let price: Double
-    let description, category: String
-    let rating: Rating
+	let id: Int
+	let title: String
+	let price: Double
+	let description, category: String
+	let rating: Rating
 }
 
-/// Rating
+// MARK: - Rating
 struct Rating: Codable {
-    let rate: Double
-    let count: Int
+	let rate: Double
+	let count: Int
 }
 
+let product: AnyPublisher<Product, Error> = fetchProduct()
+	.share()
+	.eraseToAnyPublisher()
 
-let products: AnyPublisher<Product, Error> = fetchProducts(from: url)
-    .share()
-    .eraseToAnyPublisher()
-    
-products
-    .receive(on: DispatchQueue.main)
-    .sink { completion in
-        switch completion {
-            case .finished:
-                print("Process Completed")
-            case .failure(let error):
-                print(error.localizedDescription)
-        }
-        
-    } receiveValue: { product in
-        print("product")
-        print(product)
-    }
-    .store(in: &cancellable)
+product
+	.receive(on: DispatchQueue.main)
+	.sink(receiveCompletion: { result in
+		switch result {
+			case .finished:
+				print("Finished")
+			case .failure(let failure):
+				print("Failed with \(failure.localizedDescription)")
+		}
+	}, receiveValue: { product in
+		print("product")
+		print(product)
+	})
+	.store(in: &cancellable)
 
+product
+	.receive(on: DispatchQueue.main)
+	.sink(receiveCompletion: { result in
+		switch result {
+			case .finished:
+				print("Finished")
+			case .failure(let failure):
+				print("Failed with \(failure.localizedDescription)")
+		}
+	}, receiveValue: { product in
+		print("product")
+		print(product)
+	})
+	.store(in: &cancellable)
 
-RunLoop.main.run(until: .distantFuture)
-
+RunLoop.main.run()
