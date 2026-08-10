@@ -6,16 +6,48 @@
 //
 
 import SwiftUI
+import SwiftData
 
 
 struct ContentView: View {
+    
+    @Environment(\.modelContext) var modelContext
+    
+    @State private var sortOrder = SortDescriptor(\Destination.name)
+    @State private var path: [Destination] = []
+    @State private var searchText: String = ""
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        NavigationStack(path: $path) {
+            DestinationList(sort: sortOrder, searchText: searchText)
+                .navigationDestination(for: Destination.self, destination: EditDestination.init)
+                .searchable(text: $searchText)
+                .toolbar {
+                    Button("Add Destination", systemImage: "plus") {
+                        self.addDestination()
+                    }
+                    Menu("Sort", systemImage: "arrow.up.arrow.down") {
+                        Picker("Sort", selection: $sortOrder) {
+                            Text("Name")
+                                .tag(SortDescriptor(\Destination.name))
+                            Text("Date")
+                                .tag(SortDescriptor(\Destination.date))
+                            Text("Priority")
+                                .tag(SortDescriptor(\Destination.priority))
+                        }
+                        .pickerStyle(.inline)
+                    }
+                }
         }
-        .padding()
+    }
+}
+
+
+private extension ContentView {
+    func addDestination() {
+        let destination = Destination()
+        
+        self.modelContext.insert(destination)
+        self.path = [destination]
     }
 }
