@@ -11,6 +11,7 @@ import SwiftData
 
 struct EditDestination: View {
     
+    @Environment(\.modelContext) private var modelContext
     @Bindable var destination: Destination
     @State private var newSight: String = ""
     
@@ -31,6 +32,7 @@ struct EditDestination: View {
                 ForEach(destination.sights) { sight in
                     Text(sight.name)
                 }
+                .onDelete(perform: deleteSight)
                 
                 HStack {
                     TextField("Add sight", text: $newSight)
@@ -47,8 +49,34 @@ struct EditDestination: View {
 
 private extension EditDestination {
     func addSight() {
-        guard !newSight.isEmpty else { return }
-        self.destination.sights.append(Sight(name: newSight))
+        let trimmedName = newSight.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedName.isEmpty else { return }
+
+        self.destination.sights.append(Sight(name: trimmedName))
         self.newSight = ""
+        saveChanges()
+    }
+
+    func deleteSight(_ indexSet: IndexSet) {
+        /// So here we need to take care both the references
+        /// 1. that Destination is holding
+        /// 2. that actual Sight
+        let sightsToDelete = indexSet.map { self.destination.sights[$0] }
+
+        self.destination.sights.remove(atOffsets: indexSet)
+
+        for sight in sightsToDelete {
+            modelContext.delete(sight)
+        }
+
+        saveChanges()
+    }
+
+    func saveChanges() {
+        do {
+            try self.modelContext.save()
+        } catch {
+            print(error.localizedDescription)
+        }
     }
 }
