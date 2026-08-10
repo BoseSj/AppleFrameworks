@@ -16,11 +16,14 @@ struct DestinationList: View {
     @Query(sort: [SortDescriptor(\Destination.name)])
     var destinations: [Destination]
     
-    init(sort: SortDescriptor<Destination>, searchText: String) {
+    init(sort: SortDescriptor<Destination>, searchText: String, isShowingFutureDestinations: Bool) {
+        let now = Date.now
         _destinations = Query(filter: #Predicate {
-            if searchText.isEmpty { return true }
-            else {
-                return $0.name.localizedStandardContains(searchText)
+            return if searchText.isEmpty {
+                (isShowingFutureDestinations ? $0.date > now : true)
+            } else {
+                $0.name
+                    .localizedStandardContains(searchText) && (isShowingFutureDestinations ? $0.date > now : true)
             }
         }, sort: [sort])
     }
