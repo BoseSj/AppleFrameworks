@@ -16,15 +16,13 @@ struct DestinationList: View {
     @Query(sort: [SortDescriptor(\Destination.name)])
     var destinations: [Destination]
     
-    init(sort: SortDescriptor<Destination>, searchText: String, isShowingFutureDestinations: Bool) {
-        let now = Date.now
+	init(sort: SortDescriptor<Destination>, searchText: String,
+		 isShowingFutureOnly: Bool) {
+		let now = Date.now
         _destinations = Query(filter: #Predicate {
-            return if searchText.isEmpty {
-                (isShowingFutureDestinations ? $0.date > now : true)
-            } else {
-                $0.name
-                    .localizedStandardContains(searchText) && (isShowingFutureDestinations ? $0.date > now : true)
-            }
+			(searchText.isEmpty ||
+			$0.name.localizedStandardContains(searchText)) &&
+			(isShowingFutureOnly ? $0.date > now : true)
         }, sort: [sort])
     }
     
@@ -50,7 +48,7 @@ private extension DestinationList {
     func delete(_ indexSet: IndexSet) {
         for index in indexSet {
             let data = destinations[index]
-            modelContext.delete(data)
+			modelContext.delete(data)
         }
         
         /// Current Behaviour

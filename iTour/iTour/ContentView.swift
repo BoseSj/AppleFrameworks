@@ -16,34 +16,37 @@ struct ContentView: View {
     @State private var sortOrder = SortDescriptor(\Destination.name)
     @State private var path: [Destination] = []
     @State private var searchText: String = ""
-    @State private var isShowingFutureDestinations = false
+    @State private var isShowingFutureOnly = false
     
     var body: some View {
         NavigationStack(path: $path) {
-            DestinationList(sort: sortOrder, searchText: searchText,
-                            isShowingFutureDestinations: isShowingFutureDestinations)
-                .navigationDestination(for: Destination.self, destination: EditDestination.init)
-                .searchable(text: $searchText)
-                .toolbar {
-                    Button("Add Destination", systemImage: "plus") {
-                        self.addDestination()
-                    }
-                    
-                    Toggle("Future Destinations", isOn: $isShowingFutureDestinations)
-                    
-                    Menu("Sort", systemImage: "arrow.up.arrow.down") {
-                        Picker("Sort", selection: $sortOrder) {
-                            Text("Name")
-                                .tag(SortDescriptor(\Destination.name))
-                            Text("Date")
-                                .tag(SortDescriptor(\Destination.date))
-                            Text("Priority")
-                                .tag(SortDescriptor(\Destination.priority))
-                        }
-                        .pickerStyle(.inline)
-                    }
-                }
-        }
+			DestinationList(
+				sort: sortOrder, searchText: searchText,
+				isShowingFutureOnly: isShowingFutureOnly
+			)
+			.navigationDestination(for: Destination.self, destination: EditDestination.init)
+			.searchable(text: $searchText)
+			.toolbar {
+				Button("Add Destination", systemImage: "plus") {
+					self.addDestination()
+				}
+				Button("Future only", systemImage: "app.badge.clock.fill") {
+					self.isShowingFutureOnly.toggle()
+				}
+				
+				Menu("Sort", systemImage: "arrow.up.arrow.down") {
+					Picker("Sort", selection: $sortOrder) {
+						Text("Name")
+							.tag(SortDescriptor(\Destination.name))
+						Text("Date")
+							.tag(SortDescriptor(\Destination.date))
+						Text("Priority")
+							.tag(SortDescriptor(\Destination.priority))
+					}
+					.pickerStyle(.inline)
+				}
+			}
+		}
     }
 }
 
