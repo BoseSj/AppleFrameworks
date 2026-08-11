@@ -11,7 +11,6 @@ import SwiftData
 
 struct EditDestination: View {
     
-    @Environment(\.modelContext) private var modelContext
     @Bindable var destination: Destination
     @State private var newSight: String = ""
     
@@ -54,29 +53,18 @@ private extension EditDestination {
 
         self.destination.sights.append(Sight(name: trimmedName))
         self.newSight = ""
-        saveChanges()
     }
 
     func deleteSight(_ indexSet: IndexSet) {
-        /// So here we need to take care both the references
+        /// Now if we had added separate container for here we need to take care both the references
         /// 1. that Destination is holding
         /// 2. that actual Sight
-        let sightsToDelete = indexSet.map { self.destination.sights[$0] }
+//          let sightsToDelete = indexSet.map { self.destination.sights[$0] }
 
         self.destination.sights.remove(atOffsets: indexSet)
 
-        for sight in sightsToDelete {
-            modelContext.delete(sight)
-        }
-
-        saveChanges()
-    }
-
-    func saveChanges() {
-        do {
-            try self.modelContext.save()
-        } catch {
-            print(error.localizedDescription)
-        }
+//        for sight in sightsToDelete {
+//            modelContext.delete(sight)
+//        }
     }
 }
