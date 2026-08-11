@@ -47,10 +47,6 @@ struct EditDestination: View {
 
 
 private extension EditDestination {
-	func deleteSight(_ indexSet: IndexSet) {
-		self.destination.sights.remove(atOffsets: indexSet)
-	}
-	
     func addSight() {
         let trimmedName = newSight.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else { return }
