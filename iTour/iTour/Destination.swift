@@ -15,7 +15,7 @@ class Destination {
 	var date: Date
 	var priority: Int
     
-    @Relationship(deleteRule: .cascade)
+	@Relationship(deleteRule: .cascade, inverse: \Sight.destination)
     var sights: [Sight] = []
 	
 	init(

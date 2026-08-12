@@ -11,8 +11,10 @@ import SwiftData
 @Model
 class Sight {
     var name: String
+	var destination: Destination?
     
-    init(name: String = "") {
+    init(name: String, destination: Destination? = nil) {
         self.name = name
+		self.destination = destination
     }
 }
