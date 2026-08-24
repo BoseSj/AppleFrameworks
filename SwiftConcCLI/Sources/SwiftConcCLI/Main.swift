@@ -7,16 +7,35 @@ import Foundation
 @main
 struct SwiftConcCLI {
     static func main() {
-        let fetcher = Fetcher()
-        let loader = Loader()
-
-        fetcher.load(onSuccess: { data in
-            loader.setValue(data: data)
-        })
+        Task {
+            await someFunc()
+        }
         RunLoop.current.run()
     }
 }
 
+@concurrent
+func someFunc() async {
+    print("something happened")
+}
+func fun() {
+    print(Thread.current)
+    DispatchQueue.main.async {
+        print("main queue")
+        print(Thread.current)
+    }
+    // DispatchQueue.main.sync {
+    //   print(Thread.current)
+    // }
+    DispatchQueue.global().async {
+        print("global queue")
+        print(Thread.current)
+    }
+    DispatchQueue.global().sync {
+        print("global sync queue")
+        print(Thread.current)
+    }
+}
 
 class Loader: @unchecked Sendable {
     private(set) var result = [Data]()
