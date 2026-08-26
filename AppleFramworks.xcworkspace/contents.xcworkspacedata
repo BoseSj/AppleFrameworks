@@ -6,6 +6,7 @@
    </FileRef>
    <FileRef
       location = "group:CALrn/CALrn.xcodeproj">
+      location = "group:URLMacro">
    </FileRef>
    <FileRef
       location = "group:SwiftConcCLI">
