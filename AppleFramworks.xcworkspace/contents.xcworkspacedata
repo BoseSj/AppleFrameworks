@@ -2,6 +2,12 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:AVFoundationLrn/AVFoundationLrn.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:CALrn/CALrn.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:SwiftConcCLI">
    </FileRef>
    <FileRef
